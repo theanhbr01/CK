@@ -2,6 +2,9 @@ import email
 import imaplib
 import smtplib
 from email.mime.text import MIMEText
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
 
 class EmailTemplate:
     receiveUrl = 'imap.gmail.com'
@@ -50,21 +53,43 @@ class EmailTemplate:
                         response["Subject"] = mail_from
                         response["Body"] = mail_body
 
-                        return response
+                        return 
+                        {
+                            "From": mail_from,
+                            "Subject": mail_from,
+                            "Body": mail_body
+                        }
         except:
             print("An exception occurred!")
             return
     
-    def SendNotification(self, emailFrom, emailTo, emailCc = "", emailBcc = "", emailReplyTo = "", useHTML = False, subject = "", body =""):
+    def SendNotification(self, emailFrom, emailTo, emailCc = "", emailBcc = "", emailReplyTo = "", subject = "", body ="", fileName = "", filePath = ""):
         try:
-            message = MIMEText(body)
+            message = MIMEMultipart()
             message['Subject'] = subject
             message['From'] = emailFrom
             message['To'] = emailTo
             message['CC'] = emailCc
             message['BCC'] = emailBcc
             message['In-Reply-To'] = emailReplyTo
-
+            message.attach(MIMEText(body, 'plain'))
+            if(fileName and filePath):
+                # open the file to be sent 
+                filename = "File_name_with_extension"
+                attachment = open("Path of the file", "rb")
+                
+                # instance of MIMEBase and named as p
+                p = MIMEBase('application', 'octet-stream')
+                
+                # To change the payload into encoded form
+                p.set_payload((attachment).read())
+                
+                # encode into base64
+                encoders.encode_base64(p)
+                
+                p.add_header('Content-Disposition', "attachment; filename= %s" % filename)
+                message.attach(p)
+                
             # we'll connect using SSL
             server = smtplib.SMTP_SSL(self.smtp_ssl_host, self.smtp_ssl_port)
             # to interact with the server, first we log in

