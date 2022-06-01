@@ -1,6 +1,7 @@
 import json
 import email
 import imaplib
+import os
 import smtplib
 from email.mime.text import MIMEText
 from email import encoders
@@ -28,8 +29,29 @@ class EmailTemplate:
                 mail_ids += block.split()
 
             for i in mail_ids:
-
+                fileName = ""
                 status, data = self.mail.fetch(i, '(RFC822)')
+                raw_email = data[0][1]
+
+                # converts byte literal to string removing b''
+                raw_email_string = raw_email.decode('utf-8')
+                email_message = email.message_from_string(raw_email_string)
+                # downloading attachments
+                for part in email_message.walk():
+                    # this part comes from the snipped I don't understand yet... 
+                    if part.get_content_maintype() == 'multipart':
+                        continue
+                    if part.get('Content-Disposition') is None:
+                        continue
+                    fileName = part.get_filename()
+                    if bool(fileName):
+                        filePath = os.path.join(os.getcwd() + '\\Downloads\\', fileName)
+                        if not os.path.exists(os.getcwd() + '\\Downloads\\'):
+                            os.makedirs(os.getcwd() + '\\Downloads\\')
+                        if not os.path.isfile(filePath) :
+                            fp = open(filePath, 'wb')
+                            fp.write(part.get_payload(decode=True))
+                            fp.close()
 
                 for response_part in data:
                     if isinstance(response_part, tuple):
@@ -52,7 +74,8 @@ class EmailTemplate:
                         content = {
                             "From": mail_from,
                             "Subject": mail_from,
-                            "Body": mail_body
+                            "Body": mail_body,
+                            "FileAttachment": fileName
                         }
 
                         return json.dumps(content)
@@ -71,7 +94,7 @@ class EmailTemplate:
             message['BCC'] = emailBcc
             message['In-Reply-To'] = emailReplyTo
             message.attach(MIMEText(body, 'plain'))
-            if(fileName and filePath):
+            if(bool(fileName) and bool(filePath)):
                 # open the file to be sent 
                 filename = "File_name_with_extension"
                 attachment = open("Path of the file", "rb")

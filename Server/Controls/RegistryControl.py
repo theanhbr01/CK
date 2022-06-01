@@ -2,6 +2,10 @@ import re, winreg, json
 import time
 import os
 class RegistryControl:
+    def __init__(self, emailTemplate, emailFrom):
+        self.emailTemplate = emailTemplate
+        self.emailFrom = emailFrom
+
     def ParseData(full_path):
         try:
             full_path = re.sub(r'/', r'\\', full_path)
@@ -184,10 +188,10 @@ class RegistryControl:
                 "message": "Cannot create file reg"
             }
 
-    def RegistryHandle(self, data, emailTemplate):
+    def RegistryHandle(self):
         while True:
             time.sleep(5)
-            requestContent = emailTemplate.Receive()
+            requestContent = self.emailTemplate.Receive()
             if not requestContent:
                 continue
             jsonContent = json.loads(requestContent)
@@ -219,5 +223,5 @@ class RegistryControl:
             elif ID == 4:
                 response = self.DeleteKey(full_path + r'\\')
             
-            emailTemplate.SendNotification(emailFrom = emailTemplate.userName , emailTo = data.From, subject = "[No-reply] Server Response", body = json.dumps(response))
+            self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.userName , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
         
