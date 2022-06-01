@@ -1,3 +1,4 @@
+import json
 import email
 import imaplib
 import smtplib
@@ -48,17 +49,14 @@ class EmailTemplate:
                         else:
                             mail_body = message.get_payload()
 
-                        response = dict()
-                        response["From"] = mail_from
-                        response["Subject"] = mail_from
-                        response["Body"] = mail_body
-
-                        return 
-                        {
+                        content = {
                             "From": mail_from,
                             "Subject": mail_from,
                             "Body": mail_body
                         }
+
+                        return json.dumps(content)
+                        
         except:
             print("An exception occurred!")
             return

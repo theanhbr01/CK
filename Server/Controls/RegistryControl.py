@@ -1,4 +1,5 @@
 import re, winreg, json
+import time
 import os
 class RegistryControl:
     def ParseData(full_path):
@@ -32,8 +33,7 @@ class RegistryControl:
 
             return {"isSuccess": True}
         except:
-            return 
-            {
+            return  {
                 "isSuccess": False,
                 "message": "Failed to process from the server. Please try one more time."
             }
@@ -48,14 +48,12 @@ class RegistryControl:
             value_of_value, value_type = winreg.QueryValueEx(opened_key, value_list[2])
             winreg.CloseKey(opened_key)
 
-            return 
-            {
+            return {
                 "isSuccess": False,
                 "message": value_of_value
             }
         except:
-            return 
-            {
+            return {
                 "isSuccess": False,
                 "message": "Failed to process from the server. Please try one more time."
             }
@@ -108,8 +106,7 @@ class RegistryControl:
 
             return {'isSuccess': True}
         except:
-            return 
-            {
+            return {
                 "isSuccess": False,
                 "message": "Failed to process from the server. Please try one more time."
             }
@@ -125,8 +122,7 @@ class RegistryControl:
             
             return {'isSuccess': True}
         except:
-            return 
-            {
+            return {
                 "isSuccess": False,
                 "message": "Failed to process from the server. Please try one more time."
             }
@@ -140,8 +136,7 @@ class RegistryControl:
 
             return {'isSuccess': True}
         except:
-            return 
-            {
+            return {
                 "isSuccess": False,
                 "message": "Failed to process from the server. Please try one more time."
             }
@@ -154,8 +149,7 @@ class RegistryControl:
 
             return {'isSuccess': True}
         except:
-            return 
-            {
+            return {
                 "isSuccess": False,
                 "message": "Failed to process from the server. Please try one more time."
             }
@@ -168,8 +162,7 @@ class RegistryControl:
 
             return {'isSuccess': True}
         except:
-            return 
-            {
+            return {
                 "isSuccess": False,
                 "message": "Failed to process from the server. Please try one more time."
             }
@@ -181,30 +174,32 @@ class RegistryControl:
                 f.write(full_path)
                 f.close()
             os.system(r'regedit /s ' + os.getcwd() + '\\run.reg')
-            return 
-            {
+            return {
                 "isSuccess": True,
                 "message": "File reg created"
             }
         except:
-            return 
-            {
+            return {
                 "isSuccess": False,
                 "message": "Cannot create file reg"
             }
-    
+
     def RegistryHandle(self, data, emailTemplate):
         while True:
-            params = emailTemplate.Receive()
-            params = params.body
+            time.sleep(5)
+            requestContent = emailTemplate.Receive()
+            if not requestContent:
+                continue
+            jsonContent = json.loads(requestContent)
+            body = jsonContent["Body"]
+            bodyJson = json.loads(body)
+            data = bodyJson["Data"]
 
-            msg = json.loads(params)
-
-            ID = msg['ID']
-            full_path = msg['path'] 
-            name_value = msg['name_value']
-            value = msg['value']
-            v_type = msg['v_type']
+            ID = data['ID']
+            full_path = data['path'] 
+            name_value = data['name_value']
+            value = data['value']
+            v_type = data['v_type']
 
             if ID == -1:
                 return
@@ -224,5 +219,5 @@ class RegistryControl:
             elif ID == 4:
                 response = self.DeleteKey(full_path + r'\\')
             
-            emailTemplate.SendNotification(emailFrom = emailTemplate.userName , emailTo = data.From, subject = "[Noreply] Server Response", body = response)
+            emailTemplate.SendNotification(emailFrom = emailTemplate.userName , emailTo = data.From, subject = "[No-reply] Server Response", body = json.dumps(response))
         
