@@ -1,6 +1,8 @@
+import codecs
 import json
 import  pickle
 import os
+import textwrap
 import time
 
 class FileControl:
@@ -22,50 +24,45 @@ class FileControl:
         return dirs
 
     def ShowTree(self, root):
-        tree = ""
+        tree = []
         if not bool(root):
             for c in range(ord('A'), ord('Z') + 1):
                 path = chr(c) + ":\\"
                 if os.path.isdir(path):
-                    tree += path + '\n'
+                    tree.append(path)
         elif os.path.isdir(root):
             listD = os.listdir(root)
             for d in listD:
-                tree += root + d + '\n'
-        self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = data)
+                tree.append(root + d)
+        response = {
+            "isSuccess": True,
+            "message": tree
+        }
+        self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response)) 
 
-    # def SendListDirs(self):
-    #     request = self.emailTemplate.Receive()
-    #     path = request.body
-    #     if not os.path.isdir(path):
-    #         return [False, path]
-
-    #     try:
-    #         listT = []
-    #         listD = os.listdir(path)
-    #         for d in listD:
-    #             listT.append((d, os.path.isdir(path + "\\" + d)))
-            
-    #         data = pickle.dumps(listT)
-    #         self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = data)
-    #         return [True, path]
-    #     except:
-    #         self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "Failed to process from the server. Please try one more time.")
-    #         return [False, "error"]    
-
-    # def DelFile(self):
-    #     request = self.emailTemplate.Receive()
-    #     p = request.body
-    #     if os.path.exists(p):
-    #         try:
-    #             os.remove(p)
-    #             self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "ok")
-    #         except:
-    #             self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "Failed to process from the server. Please try one more time.")
-    #             return
-    #     else:
-    #         self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "Failed to process from the server. Please try one more time.")
-    #         return
+    def DelFile(self, filePath):
+        if os.path.exists(filePath):
+            try:
+                response = {
+                    "isSuccess": True,
+                    "message": "Deleted " + filePath
+                }
+                os.remove(filePath)
+                self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
+            except:
+                response = {
+                    "isSuccess": False,
+                    "message": "Failed to process from the server. Please try one more time."
+                }
+                self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
+                return
+        else:
+            response = {
+                    "isSuccess": False,
+                    "message": "Path not Found! Please try one more time."
+                }
+            self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
+            return
 
     # # copy file from client to server
     # def CopyFileToServer(self):
@@ -90,16 +87,21 @@ class FileControl:
     #     except:
     #         self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "-1")
 
-    # # copy file from server to client
-    # def CopyFileToClient(self):
-    #     request = self.emailTemplate.Receive()
-    #     filename = request.body
-    #     if filename == "-1" or not os.path.isfile(filename):
-    #         self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "-1")
-    #         return
-    #     with open(filename, "rb") as f:
-    #         data = f.read()
-    #         self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = data)
+    # copy file from server to client
+    def CopyFileToClient(self, filePath):
+        if not bool(filePath) or not os.path.isfile(filePath):
+            response = {
+                "isSuccess": False,
+                "message": "File not Found! Please try one more time."
+            }
+            filePath = codecs.decode(filePath, 'unicode_escape')
+            fileName = filePath.split("\\")[-1]
+            self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
+            return
+        response = {
+            "isSuccess": True
+        }
+        self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response), fileName = fileName, filePath = filePath)
 
 
     def FileHandle(self):       
@@ -111,11 +113,13 @@ class FileControl:
             jsonContent = json.loads(requestContent)
             body = jsonContent["Body"]
             bodyJson = json.loads(body)
-            rawData = bodyJson["Data"]
-            data = json.loads(rawData)
+            data = bodyJson["Data"]
+
 
             if ("SHOW" in data):
-                root = data["Root"]
+                root = ""
+                if "Root" in data:
+                    root = data["Root"]
                 self.ShowTree(root)
             
             # # copy file from client to server
@@ -124,16 +128,18 @@ class FileControl:
             #     self.CopyFileToServer(client)
             #     isMod = False
 
-            # # copy file from server to client
-            # elif (data == "COPY"):
-            #     self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "OK")
-            #     self.CopyFileToClient(client)
-            #     isMod = False
+            # copy file from server to client
+            elif (data == "COPY"):
+                filename = ""
+                if "Root" in data:
+                    filename = data["Root"]
+                self.CopyFileToClient(filename)
 
-            # elif (data == "DEL"):
-            #     self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "OK")
-            #     self.DelFile(client)
-            #     isMod = False
+            elif (data == "DEL"):
+                filePath = ""
+                if "Root" in data:
+                    filePath = data["Root"]
+                self.DelFile(filePath)
 
             elif (data == "QUIT"):
                 return
