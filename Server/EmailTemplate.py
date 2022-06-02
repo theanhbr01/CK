@@ -96,8 +96,7 @@ class EmailTemplate:
             message.attach(MIMEText(body, 'plain'))
             if(bool(fileName) and bool(filePath)):
                 # open the file to be sent 
-                filename = "File_name_with_extension"
-                attachment = open("Path of the file", "rb")
+                attachment = open(filePath, "rb")
                 
                 # instance of MIMEBase and named as p
                 p = MIMEBase('application', 'octet-stream')
@@ -108,7 +107,7 @@ class EmailTemplate:
                 # encode into base64
                 encoders.encode_base64(p)
                 
-                p.add_header('Content-Disposition', "attachment; filename= %s" % filename)
+                p.add_header('Content-Disposition', "attachment; filename= %s" % fileName)
                 message.attach(p)
                 
             # we'll connect using SSL

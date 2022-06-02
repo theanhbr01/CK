@@ -2,6 +2,7 @@ import codecs
 import json
 import  pickle
 import os
+import shutil
 import textwrap
 import time
 
@@ -64,28 +65,15 @@ class FileControl:
             self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
             return
 
-    # # copy file from client to server
-    # def CopyFileToServer(self):
-    #     request = self.emailTemplate.Receive()
-    #     p = request.body
-    #     if (received == "-1"):
-    #         self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "-1")
-    #         return
-    #     filename, filesize, path = received.split(SEPARATOR)
-    #     filename = os.path.basename(filename)
-    #     filesize = int(filesize)
-    #     data = b""
-    #     while len(data) < filesize:
-    #         packet = sock.recv(999999)
-    #         data += packet
-    #     if (data == "-1"):
-    #         self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "-1")
-    #         return
-    #     try:
-    #         with open(path + filename, "wb") as f:
-    #             f.write(data)
-    #     except:
-    #         self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "-1")
+    # copy file from client to server
+    def CopyFileToServer(self, filePath):
+        filePath = codecs.decode(filePath, 'unicode_escape')
+        fileName = filePath.split("\\")[-1]
+
+        source = os.path.join(os.getcwd() + '\\Downloads\\', fileName)
+        os.rename(source, filePath)
+        os.replace(source, filePath)
+        shutil.move(source, filePath)
 
     # copy file from server to client
     def CopyFileToClient(self, filePath):
@@ -94,13 +82,14 @@ class FileControl:
                 "isSuccess": False,
                 "message": "File not Found! Please try one more time."
             }
-            filePath = codecs.decode(filePath, 'unicode_escape')
-            fileName = filePath.split("\\")[-1]
+            
             self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
             return
         response = {
             "isSuccess": True
         }
+        filePath = codecs.decode(filePath, 'unicode_escape')
+        fileName = filePath.split("\\")[-1]
         self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response), fileName = fileName, filePath = filePath)
 
 
@@ -122,26 +111,27 @@ class FileControl:
                     root = data["Root"]
                 self.ShowTree(root)
             
-            # # copy file from client to server
-            # elif (mod == "COPYTO"):
-            #     self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = "OK")
-            #     self.CopyFileToServer(client)
-            #     isMod = False
+            # copy file from client to server
+            elif ("COPYTO" in data):
+                filename = ""
+                if "Root" in data:
+                    filename = data["Root"]
+                self.CopyFileToServer(filename)
 
             # copy file from server to client
-            elif (data == "COPY"):
+            elif ("COPY" in data):
                 filename = ""
                 if "Root" in data:
                     filename = data["Root"]
                 self.CopyFileToClient(filename)
 
-            elif (data == "DEL"):
+            elif ("DEL" in data):
                 filePath = ""
                 if "Root" in data:
                     filePath = data["Root"]
                 self.DelFile(filePath)
 
-            elif (data == "QUIT"):
+            elif ("QUIT" in data):
                 return
             
             else:
