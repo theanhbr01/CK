@@ -82,7 +82,7 @@ def HandleRequest(request, emailTemplate):
 
 
 if __name__ == "__main__":
-    gmail = EmailTemplate("theanh@canhcam.com", "Theanh!23")
+    gmail = EmailTemplate("mmt.pythonmail@gmail.com", "'supersecret'")
 
     while(1):
         content = gmail.Receive()
