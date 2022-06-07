@@ -18,7 +18,7 @@ Format response
 }
 
 2. Email Template
-EmailTemplate được viết dưới dạng class để control phần gửi và nhận email. Phần mail này được gắn cứng các endpoint, port của gmail. Có thể thay đổi thành các server mail khác.
+    EmailTemplate được viết dưới dạng class để control phần gửi và nhận email. Phần mail này được gắn cứng các endpoint, port của gmail. Có thể thay đổi thành các server mail khác.
     2.1 Khởi tạo
         EmailTemplate(userName, password)
     2.2 Nhận mail 
