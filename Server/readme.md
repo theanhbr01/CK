@@ -4,7 +4,7 @@ Remote Desktop with Gmail
 
     Chúng ta sẽ sử dụng kiểu Json để gửi đi request và nhận response
 
-    Format request
+    1.1 Format request
 
     {
         'Method': 'Method' //Mã của chức năng điều khiển
@@ -13,8 +13,8 @@ Remote Desktop with Gmail
         }
     }
 
-    Format response
-    
+    1.2 Format response
+
     {
         'isSuccess': True // Thông báo thành công/thất bại
         'message': //Nếu thành công sẽ trả ra kết quả. Ngược lại sẽ trả về lỗi
