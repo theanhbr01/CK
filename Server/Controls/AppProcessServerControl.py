@@ -7,7 +7,10 @@ class AppProcessServerControl:
     def ListApps():
         cmd = 'powershell "gps | where {$_.mainWindowTitle} | select Description, ID, @{Name=\'ThreadCount\';Expression ={$_.Threads.Count}}'
         proc = os.popen(cmd).read()
-        return proc
+        return {
+            "isSuccess": True,
+            "message": proc
+        }
         
     @staticmethod
     def ListProcesses():
@@ -21,7 +24,10 @@ class AppProcessServerControl:
                 ls += str(name) + '\t' + str(pid) + '\t' + str(threads) + '\n'
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 pass
-        return ls
+        return {
+            "isSuccess": True,
+            "message": ls
+        }
 
     @staticmethod
     def Kill(taskID):

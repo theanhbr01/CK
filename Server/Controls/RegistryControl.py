@@ -204,7 +204,7 @@ class RegistryControl:
             name_value = data["name_value"]
         if("value" in data):
             value = data["value"]
-        if("v_typ" in data):
+        if("v_type" in data):
             v_type = data["v_type"]
 
     @staticmethod

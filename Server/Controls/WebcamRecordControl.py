@@ -1,12 +1,10 @@
 import json
 import os
-import numpy as np
-import pyautogui
 import cv2
 import datetime
 import zipfile
 
-class ScreenRecordControl:
+class WebcamRecordControl:
     @staticmethod
     def LoadData(emailTemplate):
         global action
@@ -66,19 +64,11 @@ class ScreenRecordControl:
             
             # Resize this window
             cv2.resizeWindow("Live", 480, 270)
+            vid = cv2.VideoCapture(0)
 
             while True:
-                # Take screenshot using PyAutoGUI
-                img = pyautogui.screenshot()
-            
-                # Convert the screenshot to a numpy array
-                frame = np.array(img)
-            
-                # Convert it from BGR(Blue, Green, Red) to
-                # RGB(Red, Green, Blue)
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
-                # Write it to the output file
+                ret, frame = vid.read()
+
                 out.write(frame)
                 
                 then = datetime.datetime.now()
@@ -86,13 +76,13 @@ class ScreenRecordControl:
                 if(timeSpan.total_seconds() > 600):
                     break
 
-                ScreenRecordControl.LoadData(emailTemplate)
+                WebcamRecordControl.LoadData(emailTemplate)
 
                 if "STOP" == action:
                     break
             out.release()
             cv2.destroyAllWindows()
-            compressedFileName, compressedFilePath = ScreenRecordControl.CompressFile(filename, filePath)
+            compressedFileName, compressedFilePath = WebcamRecordControl.CompressFile(filename, filePath)
             return {
                 "isSuccess": True,
                 "fileName": compressedFileName,
