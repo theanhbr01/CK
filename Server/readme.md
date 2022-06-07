@@ -1,26 +1,29 @@
 Remote Desktop with Gmail
 
 1. Giới thiệu
-Chúng ta sẽ sử dụng kiểu Json để gửi đi request và nhận response
+    Chúng ta sẽ sử dụng kiểu Json để gửi đi request và nhận response
 
-Format request
-{
-    'Method': 'Method' //Mã của chức năng điều khiển
-    'Data': { 
-        //Tùy vào mỗi chức năng sẽ có một data nhất định
+    Format request
+    {
+        'Method': 'Method' //Mã của chức năng điều khiển
+        'Data': { 
+            //Tùy vào mỗi chức năng sẽ có một data nhất định
+        }
     }
-}
 
-Format response
-{
-    'isSuccess': True // Thông báo thành công/thất bại
-    'message': //Nếu thành công sẽ trả ra kết quả. Ngược lại sẽ trả về lỗi
-}
+    Format response
+    {
+        'isSuccess': True // Thông báo thành công/thất bại
+        'message': //Nếu thành công sẽ trả ra kết quả. Ngược lại sẽ trả về lỗi
+    }
 
 2. Email Template
+
     EmailTemplate được viết dưới dạng class để control phần gửi và nhận email. Phần mail này được gắn cứng các endpoint, port của gmail. Có thể thay đổi thành các server mail khác.
+    
     2.1 Khởi tạo
         EmailTemplate(userName, password)
+        
     2.2 Nhận mail 
         Nhận mail chỉ trả về những mail chưa đọc
         EmailTemplate.Receive() trả về một string converted json bao gồm các thông tin:
@@ -34,6 +37,7 @@ Format response
         'Body': 'Email Body Test',
         'FileAttachment': 'File.zip'
     }
+    
     2.3 Gửi mail
         EmailTemplate.SendNotification(emailFrom, emailTo, emailCc, emailBcc, emailReplyTo, subject, body, fileName, filePath) để gửi mail với các nội dung:
         - emailFrom (Tên người gửi mail, mặc định là mail của server) *Bắt buộc
@@ -45,8 +49,11 @@ Format response
         - body (Nội dung mail)
         - fileName (Tên file đính kèm)
         - filePath (Đường dẫn file trên server)
+        
 3. Chức năng remote
+
     Các chức năng được viết dưới static class để control và nằm ở trong ./Controls
+    
     3.1 Hiển thị các Process và App
         File: ./Controls/AppProcessServerControl.py
         Method: APPS
