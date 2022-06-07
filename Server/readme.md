@@ -5,6 +5,7 @@ Remote Desktop with Gmail
     Chúng ta sẽ sử dụng kiểu Json để gửi đi request và nhận response
 
     Format request
+
     {
         'Method': 'Method' //Mã của chức năng điều khiển
         'Data': { 
@@ -13,6 +14,7 @@ Remote Desktop with Gmail
     }
 
     Format response
+    
     {
         'isSuccess': True // Thông báo thành công/thất bại
         'message': //Nếu thành công sẽ trả ra kết quả. Ngược lại sẽ trả về lỗi
@@ -235,7 +237,7 @@ Remote Desktop with Gmail
             }
 
     3.8 Điều kiển Webcam
-    
+
         File: ./Controls/WebcamRecordControl.py
 
         Method: WEBCAMRECORD
