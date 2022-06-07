@@ -6,19 +6,19 @@ Remote Desktop with Gmail
 
     1.1 Format request
 
-    {
-        'Method': 'Method' //Mã của chức năng điều khiển
-        'Data': { 
-            //Tùy vào mỗi chức năng sẽ có một data nhất định
+        {
+            'Method': 'Method' //Mã của chức năng điều khiển
+            'Data': { 
+                //Tùy vào mỗi chức năng sẽ có một data nhất định
+            }
         }
-    }
 
     1.2 Format response
 
-    {
-        'isSuccess': True // Thông báo thành công/thất bại
-        'message': //Nếu thành công sẽ trả ra kết quả. Ngược lại sẽ trả về lỗi
-    }
+        {
+            'isSuccess': True // Thông báo thành công/thất bại
+            'message': //Nếu thành công sẽ trả ra kết quả. Ngược lại sẽ trả về lỗi
+        }
 
 2. Email Template
 
