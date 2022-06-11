@@ -70,7 +70,7 @@ def HandleRequest(request, emailTemplate):
         if(method == "APPS"):
             return AppProcessServerControl.Handle(data)
         if(method == "SHUTDOWN"):
-            return ShutdownRestartControl.Handle(emailTemplate)
+            return ShutdownRestartControl.Handle(data)
         if(method == "QUIT"):
             exit(0)
     except:

